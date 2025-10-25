@@ -7,8 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Clock, FileText, BookOpen, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { DownloadButton } from "@/components/download-button"
-import { TranslatedContent } from "@/components/translated-content"
-import { LanguageSwitcher } from "@/components/language-switcher"
+import { MarkdownRenderer } from "@/components/markdown-renderer"
 import { PresentationGenerator } from "@/components/presentation-generator"
 
 export default async function RecordingDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -69,7 +68,6 @@ export default async function RecordingDetailPage({ params }: { params: Promise<
             <h1 className="text-lg font-semibold">{recording.title}</h1>
             <p className="text-xs text-muted-foreground">{recording.courses?.name}</p>
           </div>
-          <LanguageSwitcher />
         </div>
       </header>
 
@@ -139,7 +137,7 @@ export default async function RecordingDetailPage({ params }: { params: Promise<
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-sm max-w-none">
-                      <TranslatedContent content={recording.summary || ""} sourceLanguage="es" />
+                      <MarkdownRenderer content={recording.summary || ""} />
                     </div>
                   </CardContent>
                 </Card>
@@ -156,7 +154,7 @@ export default async function RecordingDetailPage({ params }: { params: Promise<
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-sm max-w-none">
-                      <TranslatedContent content={recording.transcription || ""} sourceLanguage="es" />
+                      <MarkdownRenderer content={recording.transcription || ""} />
                     </div>
                   </CardContent>
                 </Card>

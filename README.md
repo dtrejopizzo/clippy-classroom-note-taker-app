@@ -1,8 +1,10 @@
 # 📚 Clippy - The Teacher's Memory
 
+🌐 **[https://clippy.ar/](https://clippy.ar/)**
+
 Clippy is an AI-powered classroom recording and note-taking tool designed to help teachers capture, transcribe, and transform their lectures into comprehensive study materials. Record your classes, get automatic transcriptions, AI-generated summaries, and downloadable presentations—all in one seamless platform.
 
-[Clippy](https://clippy.ar/)
+![Clippy Banner](https://via.placeholder.com/1200x400/4F46E5/FFFFFF?text=Clippy+-+The+Teacher%27s+Memory)
 
 ## ✨ Features
 
@@ -17,12 +19,6 @@ Clippy is an AI-powered classroom recording and note-taking tool designed to hel
 - **Multi-language support** - Transcribes in Spanish, English, and other languages
 - **AI-generated summaries** - Get concise summaries of your entire lecture
 - **Study materials generation** - Automatically creates comprehensive study guides
-
-### 🌍 Multi-language Translation
-- **Powered by Lingo.dev** - Translate content to 8+ languages
-- **Real-time translation** - Switch languages on-the-fly
-- **Automatic language detection** - Detects browser language preferences
-- **Supported languages**: English, Spanish, French, German, Portuguese, Italian, Chinese, Japanese
 
 ### 📊 Presentation Generator
 - **Automatic slide creation** - Converts summaries into PowerPoint presentations
@@ -52,7 +48,6 @@ Clippy is an AI-powered classroom recording and note-taking tool designed to hel
 ### AI & Integrations
 - **Groq Whisper API** - Audio transcription
 - **OpenAI GPT-4o-mini** - Content generation (via Vercel AI Gateway)
-- **Lingo.dev** - Multi-language translation
 - **Vercel AI SDK** - AI integration framework
 
 ## 📋 Prerequisites
@@ -62,7 +57,6 @@ Before you begin, ensure you have:
 - **Node.js 18+** or **Bun** installed
 - A **Supabase** account and project
 - A **Groq** API key (free tier available)
-- A **Lingo.dev** API key (optional, for translations)
 - A **Vercel** account (for deployment)
 
 ## 🚀 Installation
@@ -70,7 +64,7 @@ Before you begin, ensure you have:
 ### 1. Clone the repository
 
 \`\`\`bash
-git clone https://github.com/yourusername/clippy-classroom-note-taker-app.git
+git clone https://github.com/yourusername/clippy.git
 cd clippy
 \`\`\`
 
@@ -79,6 +73,10 @@ cd clippy
 \`\`\`bash
 # Using npm
 npm install
+
+# Using bun
+bun install
+\`\`\`
 
 ### 3. Set up environment variables
 
@@ -95,9 +93,6 @@ NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL=http://localhost:3000
 
 # Groq API (for transcription)
 GROQ_API_KEY=your_groq_api_key
-
-# Lingo.dev (optional, for translations)
-LINGODOTDEV_API_KEY=your_lingo_api_key
 \`\`\`
 
 ### 4. Set up the database
@@ -124,6 +119,10 @@ Run the SQL scripts in order to create the necessary tables and policies:
 \`\`\`bash
 # Using npm
 npm run dev
+
+# Using bun
+bun dev
+\`\`\`
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
@@ -186,16 +185,53 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
   - **Transcript**: Full transcription of the lecture
   - **Study Materials**: Download as PowerPoint presentation
 
-### 5. Translate Content (Optional)
-- Use the language switcher to translate content
-- Supports 8+ languages
-- Translations are cached for faster subsequent access
-
-### 6. Download Presentation
+### 5. Download Presentation
 - Go to the "Study Materials" tab
 - Click "Generate Presentation"
 - Download the .pptx file
 - Open in PowerPoint or upload to Google Slides
+
+## 📁 Project Structure
+
+\`\`\`
+clippy/
+├── app/
+│   ├── api/
+│   │   └── process-recording/    # Audio processing endpoint
+│   ├── auth/
+│   │   ├── login/                 # Login page
+│   │   ├── signup/                # Sign up page
+│   │   └── verify-email/          # Email verification page
+│   ├── courses/
+│   │   └── [id]/
+│   │       ├── page.tsx           # Course detail page
+│   │       └── record/            # Recording interface
+│   ├── dashboard/                 # Main dashboard
+│   ├── recordings/
+│   │   └── [id]/                  # Recording detail page
+│   ├── layout.tsx                 # Root layout
+│   ├── page.tsx                   # Landing page
+│   └── globals.css                # Global styles
+├── components/
+│   ├── ui/                        # shadcn/ui components
+│   ├── audio-recorder.tsx         # Audio recording component
+│   ├── create-course-dialog.tsx   # Course creation dialog
+│   ├── markdown-renderer.tsx      # Markdown to HTML renderer
+│   ├── presentation-generator.tsx # PowerPoint generator
+│   ├── recording-card.tsx         # Recording list item
+│   └── start-recording-button.tsx # Recording button
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts              # Supabase browser client
+│   │   ├── server.ts              # Supabase server client
+│   │   └── middleware.ts          # Auth middleware
+│   └── utils.ts                   # Utility functions
+├── scripts/
+│   ├── 001_create_tables.sql      # Database schema
+│   ├── 002_profile_trigger.sql    # Auto-profile creation
+│   └── 003_create_storage_bucket.sql # Storage setup
+└── middleware.ts                  # Next.js middleware
+\`\`\`
 
 ## 🔑 API Keys Setup
 
@@ -205,13 +241,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 3. Navigate to API Keys
 4. Create a new API key
 5. Add to `.env.local` as `GROQ_API_KEY`
-
-### Lingo.dev API Key (Optional)
-1. Go to [lingo.dev](https://lingo.dev)
-2. Sign up for an account
-3. Navigate to API settings
-4. Generate an API key
-5. Add to `.env.local` as `LINGODOTDEV_API_KEY`
 
 ### Supabase Setup
 1. Create a project at [supabase.com](https://supabase.com)
@@ -229,6 +258,11 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 2. Import the project in Vercel
 3. Add all environment variables in Vercel project settings
 4. Deploy!
+
+\`\`\`bash
+# Or use Vercel CLI
+vercel --prod
+\`\`\`
 
 ### Important Notes
 - Make sure all environment variables are set in Vercel
@@ -261,12 +295,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Groq** - For the amazing Whisper API
 - **Supabase** - For the backend infrastructure
 - **Vercel** - For hosting and AI SDK
-- **Lingo.dev** - For translation capabilities
 - **shadcn/ui** - For beautiful UI components
 
 ## 📧 Support
 
-For support, email support@clippy.ar or open an issue on GitHub.
+For support, email support@clippy.dev or open an issue on GitHub.
 
 ---
 
