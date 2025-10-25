@@ -68,7 +68,7 @@ Before you begin, ensure you have:
 ### 1. Clone the repository
 
 \`\`\`bash
-git clone https://github.com/yourusername/clippy.git
+git clone https://github.com/yourusername/clippy-classroom-note-taker-app.git
 cd clippy
 \`\`\`
 
@@ -77,10 +77,6 @@ cd clippy
 \`\`\`bash
 # Using npm
 npm install
-
-# Using bun
-bun install
-\`\`\`
 
 ### 3. Set up environment variables
 
@@ -203,53 +199,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - Download the .pptx file
 - Open in PowerPoint or upload to Google Slides
 
-## 📁 Project Structure
-
-\`\`\`
-clippy/
-├── app/
-│   ├── api/
-│   │   ├── process-recording/    # Audio processing endpoint
-│   │   └── translate/             # Translation endpoint
-│   ├── auth/
-│   │   ├── login/                 # Login page
-│   │   ├── signup/                # Sign up page
-│   │   └── verify-email/          # Email verification page
-│   ├── courses/
-│   │   └── [id]/
-│   │       ├── page.tsx           # Course detail page
-│   │       └── record/            # Recording interface
-│   ├── dashboard/                 # Main dashboard
-│   ├── recordings/
-│   │   └── [id]/                  # Recording detail page
-│   ├── layout.tsx                 # Root layout
-│   ├── page.tsx                   # Landing page
-│   └── globals.css                # Global styles
-├── components/
-│   ├── ui/                        # shadcn/ui components
-│   ├── audio-recorder.tsx         # Audio recording component
-│   ├── create-course-dialog.tsx   # Course creation dialog
-│   ├── language-switcher.tsx      # Language selector
-│   ├── markdown-renderer.tsx      # Markdown to HTML renderer
-│   ├── presentation-generator.tsx # PowerPoint generator
-│   ├── recording-card.tsx         # Recording list item
-│   ├── start-recording-button.tsx # Recording button
-│   └── translated-content.tsx     # Translation wrapper
-├── lib/
-│   ├── lingo/
-│   │   └── server.ts              # Lingo.dev server client
-│   ├── supabase/
-│   │   ├── client.ts              # Supabase browser client
-│   │   ├── server.ts              # Supabase server client
-│   │   └── middleware.ts          # Auth middleware
-│   └── utils.ts                   # Utility functions
-├── scripts/
-│   ├── 001_create_tables.sql      # Database schema
-│   ├── 002_profile_trigger.sql    # Auto-profile creation
-│   └── 003_create_storage_bucket.sql # Storage setup
-└── middleware.ts                  # Next.js middleware
-\`\`\`
-
 ## 🔑 API Keys Setup
 
 ### Groq API Key
@@ -282,11 +231,6 @@ clippy/
 2. Import the project in Vercel
 3. Add all environment variables in Vercel project settings
 4. Deploy!
-
-\`\`\`bash
-# Or use Vercel CLI
-vercel --prod
-\`\`\`
 
 ### Important Notes
 - Make sure all environment variables are set in Vercel
@@ -324,7 +268,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Support
 
-For support, email support@clippy.dev or open an issue on GitHub.
+For support, email support@clippy.ar or open an issue on GitHub.
 
 ---
 
