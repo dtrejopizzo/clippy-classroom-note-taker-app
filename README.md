@@ -2,6 +2,8 @@
 
 Clippy is an AI-powered classroom recording and note-taking tool designed to help teachers capture, transcribe, and transform their lectures into comprehensive study materials. Record your classes, get automatic transcriptions, AI-generated summaries, and downloadable presentations—all in one seamless platform.
 
+![Clippy](https://clippy.ar/)
+
 ## ✨ Features
 
 ### 🎙️ Audio Recording
