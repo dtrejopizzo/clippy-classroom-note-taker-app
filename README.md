@@ -123,10 +123,6 @@ Run the SQL scripts in order to create the necessary tables and policies:
 # Using npm
 npm run dev
 
-# Using bun
-bun dev
-\`\`\`
-
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🗄️ Database Schema
