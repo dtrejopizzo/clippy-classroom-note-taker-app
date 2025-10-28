@@ -4,9 +4,6 @@ import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters"
 import { OpenAIEmbeddings } from "@langchain/openai"
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs"
 
-export const maxDuration = 60 // Set max duration for Vercel serverless function
-export const dynamic = "force-dynamic" // Ensure route is always dynamic
-
 export async function POST(request: NextRequest) {
   let materialId: string | null = null
 
