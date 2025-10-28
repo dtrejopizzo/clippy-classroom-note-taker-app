@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Upload, FileText, File } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
 interface UploadMaterialDialogProps {
@@ -40,79 +39,26 @@ export function UploadMaterialDialog({ courseId }: UploadMaterialDialogProps) {
     setLoading(true)
 
     try {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) {
-        throw new Error("Not authenticated")
-      }
-
-      let fileUrl = ""
-      let fileType = ""
-      let content = ""
+      const formData = new FormData()
+      formData.append("courseId", courseId)
+      formData.append("title", title)
 
       if (uploadType === "file" && file) {
-        // Upload file to Supabase Storage
-        const fileExt = file.name.split(".").pop()
-        const fileName = `${user.id}/${courseId}/${Date.now()}.${fileExt}`
-
-        const { error: uploadError } = await supabase.storage.from("course-materials").upload(fileName, file)
-
-        if (uploadError) throw uploadError
-
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("course-materials").getPublicUrl(fileName)
-
-        fileUrl = publicUrl
-        fileType = file.type.includes("pdf") ? "pdf" : "text"
-
-        // For text files, read content directly
-        if (fileType === "text") {
-          content = await file.text()
-        }
+        formData.append("file", file)
+        formData.append("fileType", file.type.includes("pdf") ? "pdf" : "text")
       } else if (uploadType === "text") {
-        // For plain text input, create a text file
-        const fileName = `${user.id}/${courseId}/${Date.now()}.txt`
-        const textBlob = new Blob([textContent], { type: "text/plain" })
-
-        const { error: uploadError } = await supabase.storage.from("course-materials").upload(fileName, textBlob)
-
-        if (uploadError) throw uploadError
-
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("course-materials").getPublicUrl(fileName)
-
-        fileUrl = publicUrl
-        fileType = "text"
-        content = textContent
+        formData.append("content", textContent)
+        formData.append("fileType", "text")
       }
 
-      // Insert material record
-      const { error: insertError } = await supabase.from("course_materials").insert({
-        course_id: courseId,
-        teacher_id: user.id,
-        title,
-        file_type: fileType,
-        file_url: fileUrl,
-        content: fileType === "text" ? content : null,
-      })
-
-      if (insertError) throw insertError
-
-      // Trigger document processing
-      const processResponse = await fetch("/api/process-material", {
+      const response = await fetch("/api/upload-material", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseId, fileUrl, fileType }),
+        body: formData,
       })
 
-      if (!processResponse.ok) {
-        const errorData = await processResponse.json()
-        throw new Error(errorData.error || "Failed to process material")
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to upload material")
       }
 
       setOpen(false)
