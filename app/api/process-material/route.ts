@@ -1,8 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter"
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters"
 import { OpenAIEmbeddings } from "@langchain/openai"
-import pdf from "pdf-parse"
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,14 +28,10 @@ export async function POST(request: NextRequest) {
     let textContent = ""
 
     if (fileType === "pdf") {
-      // Download PDF and extract text
-      const response = await fetch(fileUrl)
-      const arrayBuffer = await response.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
-
-      console.log("[v0] Extracting text from PDF")
-      const pdfData = await pdf(buffer)
-      textContent = pdfData.text
+      return NextResponse.json(
+        { error: "PDF processing temporarily disabled. Please upload text files." },
+        { status: 400 },
+      )
     } else if (fileType === "text") {
       // Download text file
       const response = await fetch(fileUrl)
