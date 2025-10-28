@@ -104,11 +104,16 @@ export function UploadMaterialDialog({ courseId }: UploadMaterialDialogProps) {
       if (insertError) throw insertError
 
       // Trigger document processing
-      await fetch("/api/process-material", {
+      const processResponse = await fetch("/api/process-material", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ courseId, fileUrl, fileType }),
       })
+
+      if (!processResponse.ok) {
+        const errorData = await processResponse.json()
+        throw new Error(errorData.error || "Failed to process material")
+      }
 
       setOpen(false)
       setTitle("")
