@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowLeft, Mic, FileText, FileIcon } from "lucide-react"
+import { ArrowLeft, Mic, FileText, FileIcon, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react"
 import Link from "next/link"
 import { RecordingCard } from "@/components/recording-card"
 import { StartRecordingButton } from "@/components/start-recording-button"
@@ -108,6 +108,32 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                         <p className="text-xs text-muted-foreground">
                           {material.file_type.toUpperCase()} • {new Date(material.created_at).toLocaleDateString()}
                         </p>
+                        <div className="mt-2 flex items-center gap-1 text-xs">
+                          {material.processing_status === "processing" && (
+                            <>
+                              <Loader2 className="h-3 w-3 animate-spin text-blue-500" />
+                              <span className="text-blue-500">Processing...</span>
+                            </>
+                          )}
+                          {material.processing_status === "completed" && (
+                            <>
+                              <CheckCircle2 className="h-3 w-3 text-green-500" />
+                              <span className="text-green-500">Ready</span>
+                            </>
+                          )}
+                          {material.processing_status === "failed" && (
+                            <>
+                              <XCircle className="h-3 w-3 text-red-500" />
+                              <span className="text-red-500">Failed</span>
+                            </>
+                          )}
+                          {material.processing_status === "pending" && (
+                            <>
+                              <Clock className="h-3 w-3 text-yellow-500" />
+                              <span className="text-yellow-500">Pending</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </CardContent>

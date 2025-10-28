@@ -2,8 +2,17 @@ import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters"
 import { OpenAIEmbeddings } from "@langchain/openai"
+import * as pdfjsLib from "pdfjs-dist"
+
+// Configure PDF.js worker
+if (typeof window === "undefined") {
+  const pdfjsWorker = await import("pdfjs-dist/build/pdf.worker.mjs")
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker.default
+}
 
 export async function POST(request: NextRequest) {
+  let materialId: string | null = null
+
   try {
     console.log("[v0] Starting material processing")
 
@@ -22,29 +31,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    console.log("[v0] Fetching material from storage")
-
-    // Fetch the file content
-    let textContent = ""
-
-    if (fileType === "pdf") {
-      return NextResponse.json(
-        { error: "PDF processing temporarily disabled. Please upload text files." },
-        { status: 400 },
-      )
-    } else if (fileType === "text") {
-      // Download text file
-      const response = await fetch(fileUrl)
-      textContent = await response.text()
-    }
-
-    if (!textContent || textContent.trim().length === 0) {
-      return NextResponse.json({ error: "No text content extracted from file" }, { status: 400 })
-    }
-
-    console.log("[v0] Text extracted, length:", textContent.length)
-
-    // Get the material ID
+    // Get the material ID and update status to processing
     const { data: material } = await supabase
       .from("course_materials")
       .select("id")
@@ -56,8 +43,46 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Material not found" }, { status: 404 })
     }
 
+    materialId = material.id
+
+    await supabase.from("course_materials").update({ processing_status: "processing" }).eq("id", materialId)
+
+    console.log("[v0] Fetching material from storage")
+
+    // Fetch the file content
+    let textContent = ""
+
+    if (fileType === "pdf") {
+      console.log("[v0] Processing PDF file")
+      const response = await fetch(fileUrl)
+      const arrayBuffer = await response.arrayBuffer()
+
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+      console.log("[v0] PDF loaded, pages:", pdf.numPages)
+
+      const textParts: string[] = []
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i)
+        const textContent = await page.getTextContent()
+        const pageText = textContent.items.map((item: any) => item.str).join(" ")
+        textParts.push(pageText)
+      }
+
+      textContent = textParts.join("\n\n")
+      console.log("[v0] PDF text extracted, length:", textContent.length)
+    } else if (fileType === "text") {
+      const response = await fetch(fileUrl)
+      textContent = await response.text()
+    }
+
+    if (!textContent || textContent.trim().length === 0) {
+      throw new Error("No text content extracted from file")
+    }
+
+    console.log("[v0] Text extracted, length:", textContent.length)
+
     // Update material with extracted content
-    await supabase.from("course_materials").update({ content: textContent }).eq("id", material.id)
+    await supabase.from("course_materials").update({ content: textContent }).eq("id", materialId)
 
     console.log("[v0] Splitting text into chunks")
 
@@ -91,7 +116,7 @@ export async function POST(request: NextRequest) {
       const chunksToInsert = batch.map((chunk, idx) => ({
         course_id: courseId,
         source_type: "material",
-        source_id: material.id,
+        source_id: materialId,
         chunk_text: chunk.pageContent,
         chunk_index: i + idx,
         embedding: JSON.stringify(batchEmbeddings[idx]),
@@ -111,6 +136,11 @@ export async function POST(request: NextRequest) {
       console.log("[v0] Inserted batch", Math.floor(i / batchSize) + 1)
     }
 
+    await supabase
+      .from("course_materials")
+      .update({ processing_status: "completed", error_message: null })
+      .eq("id", materialId)
+
     console.log("[v0] Material processing complete")
 
     return NextResponse.json({
@@ -119,6 +149,18 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error("[v0] Error processing material:", error)
+
+    if (materialId) {
+      const supabase = await createClient()
+      await supabase
+        .from("course_materials")
+        .update({
+          processing_status: "failed",
+          error_message: error instanceof Error ? error.message : "Unknown error",
+        })
+        .eq("id", materialId)
+    }
+
     return NextResponse.json(
       {
         error: "Failed to process material",
