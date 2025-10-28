@@ -2,13 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters"
 import { OpenAIEmbeddings } from "@langchain/openai"
-import * as pdfjsLib from "pdfjs-dist"
-
-// Configure PDF.js worker
-if (typeof window === "undefined") {
-  const pdfjsWorker = await import("pdfjs-dist/build/pdf.worker.mjs")
-  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker.default
-}
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs"
 
 export async function POST(request: NextRequest) {
   let materialId: string | null = null
