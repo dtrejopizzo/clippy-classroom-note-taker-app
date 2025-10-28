@@ -192,6 +192,26 @@ Format the response in a well-structured, comprehensive way that students can us
       throw new Error(`Database update failed: ${updateError.message}`)
     }
 
+    errorDetails = "Processing recording for RAG system"
+    console.log("[v0] Processing recording for RAG system")
+    try {
+      const { processDocumentForRAG } = await import("@/lib/rag/process-document")
+      await processDocumentForRAG({
+        courseId: recording.course_id,
+        sourceType: "recording",
+        sourceId: recordingId,
+        text: summary, // Use summary instead of full transcription for better retrieval
+        metadata: {
+          title: recording.title,
+          created_at: recording.created_at,
+        },
+      })
+      console.log("[v0] Recording added to RAG system")
+    } catch (ragError) {
+      console.error("[v0] Error adding recording to RAG:", ragError)
+      // Don't fail the whole process if RAG fails
+    }
+
     console.log("[v0] Recording processed successfully")
     return NextResponse.json({ success: true, recordingId })
   } catch (error) {

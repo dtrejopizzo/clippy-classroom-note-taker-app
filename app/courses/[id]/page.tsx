@@ -2,10 +2,12 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowLeft, Mic } from "lucide-react"
+import { ArrowLeft, Mic, FileText, FileIcon } from "lucide-react"
 import Link from "next/link"
 import { RecordingCard } from "@/components/recording-card"
 import { StartRecordingButton } from "@/components/start-recording-button"
+import { UploadMaterialDialog } from "@/components/upload-material-dialog"
+import { CourseChat } from "@/components/course-chat"
 
 export default async function CoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -38,6 +40,12 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
     .eq("course_id", id)
     .order("created_at", { ascending: false })
 
+  const { data: materials } = await supabase
+    .from("course_materials")
+    .select("*")
+    .eq("course_id", id)
+    .order("created_at", { ascending: false })
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <header className="border-b border-border/40 bg-background/80 backdrop-blur-sm">
@@ -56,6 +64,59 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <CourseChat courseId={course.id} />
+        </div>
+
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-1">Course Materials</h2>
+              <p className="text-sm text-muted-foreground">PDFs and text files for AI-powered Q&A</p>
+            </div>
+            <UploadMaterialDialog courseId={course.id} />
+          </div>
+
+          {!materials || materials.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                  <FileText className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold">No materials yet</h3>
+                <p className="mb-4 text-center text-sm text-muted-foreground max-w-sm">
+                  Upload PDFs or text files to enable AI-powered questions and answers about your course.
+                </p>
+                <UploadMaterialDialog courseId={course.id} />
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {materials.map((material) => (
+                <Card key={material.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary flex-shrink-0">
+                        {material.file_type === "pdf" ? (
+                          <FileIcon className="h-5 w-5" />
+                        ) : (
+                          <FileText className="h-5 w-5" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm truncate">{material.title}</h4>
+                        <p className="text-xs text-muted-foreground">
+                          {material.file_type.toUpperCase()} • {new Date(material.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-foreground mb-2">Recordings</h2>
           <p className="text-muted-foreground">All lecture recordings for this course</p>
