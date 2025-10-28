@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters"
 import { OpenAIEmbeddings } from "@langchain/openai"
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs"
 
 export async function POST(request: NextRequest) {
   let materialId: string | null = null
@@ -48,6 +47,9 @@ export async function POST(request: NextRequest) {
 
     if (fileType === "pdf") {
       console.log("[v0] Processing PDF file")
+
+      const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs")
+
       const response = await fetch(fileUrl)
       const arrayBuffer = await response.arrayBuffer()
 
