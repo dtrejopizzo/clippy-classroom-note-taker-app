@@ -24,10 +24,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get the material ID and update status to processing
     const { data: material } = await supabase
       .from("course_materials")
-      .select("id")
+      .select("id, content")
       .eq("course_id", courseId)
       .eq("file_url", fileUrl)
       .single()
@@ -40,45 +39,62 @@ export async function POST(request: NextRequest) {
 
     await supabase.from("course_materials").update({ processing_status: "processing" }).eq("id", materialId)
 
-    console.log("[v0] Fetching material from storage")
+    console.log("[v0] Fetching material content")
 
-    // Fetch the file content
     let textContent = ""
 
-    if (fileType === "pdf") {
-      console.log("[v0] Processing PDF file")
+    if (material.content && typeof material.content === "string" && material.content.trim().length > 0) {
+      console.log("[v0] Using content from database")
+      textContent = material.content
+    } else {
+      console.log("[v0] Fetching content from storage URL")
 
-      const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs")
+      if (fileType === "pdf") {
+        console.log("[v0] Processing PDF file")
 
-      const response = await fetch(fileUrl)
-      const arrayBuffer = await response.arrayBuffer()
+        const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs")
 
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-      console.log("[v0] PDF loaded, pages:", pdf.numPages)
+        const response = await fetch(fileUrl)
 
-      const textParts: string[] = []
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i)
-        const textContent = await page.getTextContent()
-        const pageText = textContent.items.map((item: any) => item.str).join(" ")
-        textParts.push(pageText)
+        if (!response.ok) {
+          throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`)
+        }
+
+        const arrayBuffer = await response.arrayBuffer()
+
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+        console.log("[v0] PDF loaded, pages:", pdf.numPages)
+
+        const textParts: string[] = []
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i)
+          const textContent = await page.getTextContent()
+          const pageText = textContent.items.map((item: any) => item.str).join(" ")
+          textParts.push(pageText)
+        }
+
+        textContent = textParts.join("\n\n")
+        console.log("[v0] PDF text extracted, length:", textContent.length)
+      } else if (fileType === "text") {
+        const response = await fetch(fileUrl)
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`)
+        }
+
+        textContent = await response.text()
       }
 
-      textContent = textParts.join("\n\n")
-      console.log("[v0] PDF text extracted, length:", textContent.length)
-    } else if (fileType === "text") {
-      const response = await fetch(fileUrl)
-      textContent = await response.text()
+      if (textContent && textContent.trim().length > 0) {
+        await supabase.from("course_materials").update({ content: textContent }).eq("id", materialId)
+      }
     }
 
     if (!textContent || textContent.trim().length === 0) {
-      throw new Error("No text content extracted from file")
+      throw new Error("No text content available")
     }
 
-    console.log("[v0] Text extracted, length:", textContent.length)
-
-    // Update material with extracted content
-    await supabase.from("course_materials").update({ content: textContent }).eq("id", materialId)
+    console.log("[v0] Text content ready, length:", textContent.length)
 
     console.log("[v0] Splitting text into chunks")
 
